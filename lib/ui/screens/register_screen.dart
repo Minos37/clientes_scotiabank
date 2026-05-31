@@ -5,44 +5,48 @@ import '../components/custom_textfield.dart';
 import '../components/primary_button.dart';
 import '../viewmodel/auth_viewmodel.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends ConsumerStatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nombreController = TextEditingController();
+  final _dniController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
+    _nombreController.dispose();
+    _dniController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _submitLogin() {
+  void _submitRegister() {
     if (_formKey.currentState!.validate()) {
-      // Ocultar el teclado
       FocusScope.of(context).unfocus();
       
-      // Llamar al ViewModel usando Riverpod
-      ref.read(authViewModelProvider.notifier).login(
+      ref.read(authViewModelProvider.notifier).register(
             _emailController.text.trim(),
             _passwordController.text.trim(),
+            nombre: _nombreController.text.trim(),
+            dni: _dniController.text.trim(),
           );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Observamos el estado para saber si está cargando o si hay un error
     final authState = ref.watch(authViewModelProvider);
 
-    // Escuchamos cambios de estado para mostrar Snackbars en caso de error
     ref.listen<AuthState>(authViewModelProvider, (previous, next) {
       if (next.error != null && (previous?.error != next.error)) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -56,6 +60,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -66,33 +75,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo de Scotiabank
-                  Image.asset(
-                    'assets/images/scoti.png',
-                    height: 80,
-                  ),
-                  const SizedBox(height: 16),
                   const Text(
-                    'Bienvenido a',
+                    'Crea tu cuenta',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const Text(
-                    'Scotiabank',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
                       color: Color(0xFFED0006),
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
 
-                  // Campos de Texto Reutilizables
+                  CustomTextField(
+                    controller: _nombreController,
+                    labelText: 'Nombre Completo',
+                    hintText: 'Ej: Juan Pérez',
+                    prefixIcon: Icons.person_outline,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingresa tu nombre';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  CustomTextField(
+                    controller: _dniController,
+                    labelText: 'DNI',
+                    hintText: 'Número de documento',
+                    prefixIcon: Icons.badge_outlined,
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingresa tu DNI';
+                      }
+                      if (value.length < 8) {
+                        return 'Ingresa un DNI válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
                   CustomTextField(
                     controller: _emailController,
                     labelText: 'Correo Electrónico',
@@ -111,60 +136,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  
                   CustomTextField(
                     controller: _passwordController,
                     labelText: 'Contraseña',
                     hintText: '••••••••',
-                    //style: TextStyle(color: Colors.black87),
                     prefixIcon: Icons.lock_outline,
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor ingresa tu contraseña';
                       }
-                      if (value.length < 2) {
-                        return 'La contraseña debe tener al menos 6 caracteres';
+                      if (value.length < 6) {
+                        return 'Mínimo 6 caracteres';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 8),
-
-                  // Olvidé mi contraseña
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        // TODO: Navegar a recuperar contraseña
-                      },
-                      child: const Text(
-                        '¿Olvidaste tu contraseña?',
-                        style: TextStyle(color: Color(0xFFED0006)),
-                      ),
-                    ),
+                  const SizedBox(height: 16),
+                  
+                  CustomTextField(
+                    controller: _confirmPasswordController,
+                    labelText: 'Confirmar Contraseña',
+                    hintText: '••••••••',
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor confirma tu contraseña';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
-                  // Botón Principal Reutilizable
                   PrimaryButton(
-                    text: 'Ingresar',
+                    text: 'Registrarme',
                     isLoading: authState.isLoading,
-                    onPressed: _submitLogin,
+                    onPressed: _submitRegister,
                   ),
 
                   const SizedBox(height: 24),
                   
-                  // Botón para registro
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('¿No tienes una cuenta?'),
+                      const Text('¿Ya tienes una cuenta?'),
                       TextButton(
                         onPressed: () {
-                          context.push('/register');
+                          context.pop();
                         },
                         child: const Text(
-                          'Regístrate',
+                          'Inicia Sesión',
                           style: TextStyle(
                             color: Color(0xFFED0006),
                             fontWeight: FontWeight.bold,
