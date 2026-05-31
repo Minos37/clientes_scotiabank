@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../ui/screens/home_screen.dart';
 import '../ui/screens/login_screen.dart';
 import '../ui/screens/movimientos_screen.dart';
+import '../ui/screens/tarjetas_screen.dart';
 import '../ui/viewmodel/auth_viewmodel.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -23,6 +24,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/movimientos',
         builder: (context, state) => const MovimientosScreen(),
+      ),
+      GoRoute(
+        path: '/tarjetas',
+        builder: (context, state) => const TarjetasScreen(),
       ),
     ],
     // Lógica de redirección basada en si el usuario está logueado o no
