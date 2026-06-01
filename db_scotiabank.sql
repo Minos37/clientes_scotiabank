@@ -4,6 +4,13 @@
 -- Productos y Servicios: Cuentas, Tarjetas, Préstamos,
 --   Inversiones, Seguros y Servicios Digitales
 -- ============================================================
+-- CORRECCIONES v1.1:
+--   [C1] public.cuentas → tipos reducidos a: digital, sueldo, power
+--   [C2] public.tarjetas → nueva columna `subtipo` para tarjetas de crédito
+--          (visa_sin_membresia | visa_smart | clasica | oro | platinum)
+--          NULL para tarjetas de débito
+--   [C3] public.solicitudes → eliminados cuenta_meta, cuenta_dolares, cts, afp
+-- ============================================================
 -- INSTRUCCIONES:
 -- 1. Ir a tu proyecto en supabase.com
 -- 2. Abrir el SQL Editor (ícono de terminal en el sidebar)
@@ -16,17 +23,14 @@
 -- ══════════════════════════════════════════════════════════
 
 -- ── 1a. Cuentas de uso diario ─────────────────────────────
+-- [C1] Solo se mantienen los tres tipos de cuenta del portal
 CREATE TABLE IF NOT EXISTS public.cuentas (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   tipo            TEXT NOT NULL CHECK (tipo IN (
                     'digital',      -- Cuenta Digital (sin costo mantenimiento)
                     'sueldo',       -- Cuenta Sueldo
-                    'power',        -- Cuenta Power
-                    'meta',         -- Cuenta Meta
-                    'dolares',      -- Ahorro en dólares
-                    'cts',          -- Depósito CTS
-                    'afp'           -- Retiro AFP
+                    'power'         -- Cuenta Power
                   )),
   numero_cuenta   TEXT NOT NULL UNIQUE,
   saldo           NUMERIC(14,2) NOT NULL DEFAULT 0,
@@ -71,11 +75,20 @@ CREATE TABLE IF NOT EXISTS public.transacciones (
 -- ══════════════════════════════════════════════════════════
 
 -- ── 2a. Tarjetas ──────────────────────────────────────────
+-- [C2] Se agrega columna `subtipo` para distinguir las variantes de tarjeta de crédito.
+--      Para tarjetas de débito, subtipo debe ser NULL.
 CREATE TABLE IF NOT EXISTS public.tarjetas (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id             UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   cuenta_id           UUID REFERENCES public.cuentas(id) ON DELETE SET NULL,
   tipo                TEXT NOT NULL CHECK (tipo IN ('credito','debito')),
+  subtipo             TEXT CHECK (subtipo IN (
+                        'visa_sin_membresia',  -- Visa Sin Membresía: sin cuota anual, ingreso desde S/ 600
+                        'visa_smart',          -- Visa Smart: consumos diarios y billeteras digitales
+                        'clasica',             -- Visa / Mastercard Clásica: cuotas sin intereses
+                        'oro',                 -- Visa / Mastercard Oro: bono bienvenida y asistencias viaje
+                        'platinum'             -- Visa / Mastercard Platinum: salas VIP y beneficios premium
+                      )),                      -- NULL para tarjetas de débito
   numero_enmascarado  TEXT NOT NULL,                  -- ej. **** **** **** 1234
   marca               TEXT NOT NULL CHECK (marca IN ('Visa','Mastercard','Amex')),
   fecha_vencimiento   DATE NOT NULL,
@@ -83,7 +96,12 @@ CREATE TABLE IF NOT EXISTS public.tarjetas (
   saldo_disponible    NUMERIC(12,2),
   activa              BOOLEAN NOT NULL DEFAULT TRUE,
   puntos_acumulados   INTEGER NOT NULL DEFAULT 0,     -- Scotia Puntos
-  created_at          TIMESTAMPTZ DEFAULT now()
+  created_at          TIMESTAMPTZ DEFAULT now(),
+  -- Restricción: subtipo requerido para crédito, prohibido para débito
+  CONSTRAINT chk_subtipo_credito CHECK (
+    (tipo = 'credito' AND subtipo IS NOT NULL) OR
+    (tipo = 'debito'  AND subtipo IS NULL)
+  )
 );
 
 -- ── 2b. Programas de lealtad (Scotia Puntos) ─────────────
@@ -336,12 +354,13 @@ CREATE TABLE IF NOT EXISTS public.siniestros (
 -- ══════════════════════════════════════════════════════════
 
 -- ── 6a. Solicitudes generales (multi-producto) ────────────
+-- [C3] Eliminados: cuenta_meta, cuenta_dolares, cts, afp
+--      (alineado con los 3 tipos de cuenta del portal)
 CREATE TABLE IF NOT EXISTS public.solicitudes (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   producto        TEXT NOT NULL CHECK (producto IN (
-                    'cuenta_digital','cuenta_sueldo','cuenta_power','cuenta_meta',
-                    'cuenta_dolares','cts','afp',
+                    'cuenta_digital','cuenta_sueldo','cuenta_power',
                     'tarjeta_credito','tarjeta_debito',
                     'prestamo_personal','adelanto_sueldo','prestamo_convenio',
                     'credito_vehicular','credito_hipotecario','mi_vivienda','libre_garantia',
@@ -460,6 +479,7 @@ CREATE INDEX IF NOT EXISTS idx_transacciones_user     ON public.transacciones(us
 CREATE INDEX IF NOT EXISTS idx_transacciones_cuenta   ON public.transacciones(cuenta_id);
 CREATE INDEX IF NOT EXISTS idx_transacciones_fecha    ON public.transacciones(fecha DESC);
 CREATE INDEX IF NOT EXISTS idx_tarjetas_user          ON public.tarjetas(user_id);
+CREATE INDEX IF NOT EXISTS idx_tarjetas_subtipo       ON public.tarjetas(subtipo) WHERE subtipo IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_prestamos_user         ON public.prestamos(user_id);
 CREATE INDEX IF NOT EXISTS idx_seguros_user           ON public.seguros(user_id);
 CREATE INDEX IF NOT EXISTS idx_notificaciones_user    ON public.notificaciones(user_id, leida);
@@ -478,43 +498,42 @@ DO $$
 DECLARE
   uid       UUID := 'TU-UUID-AQUI';  -- <-- pegar UUID de tu usuario
   cc_id     UUID;
-  ca_id     UUID;
   tc_id     UUID;
   prest_id  UUID;
   seg_id    UUID;
 BEGIN
 
-  -- ── Cuentas ──────────────────────────────────────────────
+  -- ── Cuenta Digital ───────────────────────────────────────
   INSERT INTO public.cuentas (user_id, tipo, numero_cuenta, saldo, moneda, costo_mant)
-  VALUES (uid, 'digital',  '019-1100001', 4250.00,   'PEN', 0)
+  VALUES (uid, 'digital', '019-1100001', 4250.00, 'PEN', 0)
   RETURNING id INTO cc_id;
-
-  INSERT INTO public.cuentas (user_id, tipo, numero_cuenta, saldo, moneda, costo_mant)
-  VALUES (uid, 'dolares',  '019-1100002', 850.00,    'USD', 0)
-  RETURNING id INTO ca_id;
-
-  -- ── Cuenta ahorro ─────────────────────────────────────────
-  INSERT INTO public.cuentas_ahorro (user_id, cuenta_id, saldo, meta_ahorro, tasa_interes, moneda)
-  VALUES (uid, ca_id, 850.00, 5000, 2.75, 'USD');
 
   -- ── Transacciones ─────────────────────────────────────────
   INSERT INTO public.transacciones
     (user_id, cuenta_id, tipo, canal, descripcion, monto, moneda, fecha)
   VALUES
-    (uid, cc_id, 'credito', 'app',          'Depósito sueldo',              3500.00, 'PEN', now() - interval '7 days'),
-    (uid, cc_id, 'debito',  'plin',         'Pago Plin a Juan Pérez',        200.00, 'PEN', now() - interval '5 days'),
-    (uid, cc_id, 'debito',  'app',          'Pago luz ENEL',                 120.00, 'PEN', now() - interval '4 days'),
-    (uid, cc_id, 'debito',  'app',          'Pago agua SEDAPAL',              85.00, 'PEN', now() - interval '3 days'),
-    (uid, cc_id, 'debito',  'qr',           'Compra supermercado WONG',      230.50, 'PEN', now() - interval '2 days'),
-    (uid, cc_id, 'credito', 'transferencia_intl', 'Cobro cheque exterior',   750.00, 'USD', now() - interval '1 day'),
-    (uid, ca_id, 'credito', 'app',          'Depósito ahorro USD',           200.00, 'USD', now() - interval '10 days');
+    (uid, cc_id, 'credito', 'app',   'Depósito sueldo',         3500.00, 'PEN', now() - interval '7 days'),
+    (uid, cc_id, 'debito',  'plin',  'Pago Plin a Juan Pérez',   200.00, 'PEN', now() - interval '5 days'),
+    (uid, cc_id, 'debito',  'app',   'Pago luz ENEL',            120.00, 'PEN', now() - interval '4 days'),
+    (uid, cc_id, 'debito',  'app',   'Pago agua SEDAPAL',         85.00, 'PEN', now() - interval '3 days'),
+    (uid, cc_id, 'debito',  'qr',    'Compra supermercado WONG', 230.50, 'PEN', now() - interval '2 days');
 
-  -- ── Tarjeta de crédito ────────────────────────────────────
+  -- ── Tarjeta de crédito (Visa Oro) ─────────────────────────
   INSERT INTO public.tarjetas
-    (user_id, cuenta_id, tipo, numero_enmascarado, marca, fecha_vencimiento, linea_credito, saldo_disponible, puntos_acumulados)
+    (user_id, cuenta_id, tipo, subtipo, numero_enmascarado, marca,
+     fecha_vencimiento, linea_credito, saldo_disponible, puntos_acumulados)
   VALUES
-    (uid, cc_id, 'credito', '**** **** **** 4521', 'Visa', '2027-09-30', 8000.00, 5320.00, 1250)
+    (uid, cc_id, 'credito', 'oro', '**** **** **** 4521', 'Visa',
+     '2027-09-30', 8000.00, 5320.00, 1250)
   RETURNING id INTO tc_id;
+
+  -- Tarjeta de débito (sin subtipo)
+  INSERT INTO public.tarjetas
+    (user_id, cuenta_id, tipo, subtipo, numero_enmascarado, marca,
+     fecha_vencimiento, saldo_disponible)
+  VALUES
+    (uid, cc_id, 'debito', NULL, '**** **** **** 9870', 'Visa',
+     '2028-03-31', 4250.00);
 
   -- Scotia Puntos
   INSERT INTO public.scotia_puntos (user_id, tarjeta_id, tipo_movimiento, puntos, descripcion)
@@ -532,8 +551,8 @@ BEGIN
   INSERT INTO public.pagos_servicios
     (user_id, cuenta_id, servicio, proveedor, numero_contrato, monto)
   VALUES
-    (uid, cc_id, 'luz', 'ENEL', 'ENL-987654', 120.00),
-    (uid, cc_id, 'agua', 'SEDAPAL', 'SED-112233', 85.00);
+    (uid, cc_id, 'luz',  'ENEL',    'ENL-987654', 120.00),
+    (uid, cc_id, 'agua', 'SEDAPAL', 'SED-112233',  85.00);
 
   -- ── Cambio de divisas ─────────────────────────────────────
   INSERT INTO public.cambio_divisas
@@ -543,16 +562,18 @@ BEGIN
 
   -- ── Préstamo personal ─────────────────────────────────────
   INSERT INTO public.prestamos
-    (user_id, tipo, monto, moneda, plazo_meses, tasa_anual, cuota_mensual, saldo_capital, estado, fecha_desembolso)
+    (user_id, tipo, monto, moneda, plazo_meses, tasa_anual, cuota_mensual,
+     saldo_capital, estado, fecha_desembolso)
   VALUES
-    (uid, 'personal', 15000.00, 'PEN', 36, 18.50, 547.30, 14200.00, 'activo', CURRENT_DATE - interval '2 months')
+    (uid, 'personal', 15000.00, 'PEN', 36, 18.50, 547.30, 14200.00,
+     'activo', CURRENT_DATE - interval '2 months')
   RETURNING id INTO prest_id;
 
   -- ── Depósito a plazo fijo digital ─────────────────────────
   INSERT INTO public.depositos_plazo
     (user_id, cuenta_id, monto, moneda, plazo_dias, tasa_anual, fecha_inicio, fecha_venc)
   VALUES
-    (uid, ca_id, 500.00, 'USD', 180, 4.25, CURRENT_DATE, CURRENT_DATE + interval '180 days');
+    (uid, cc_id, 500.00, 'PEN', 180, 4.25, CURRENT_DATE, CURRENT_DATE + interval '180 days');
 
   -- ── Fondo mutuo ───────────────────────────────────────────
   INSERT INTO public.fondos_mutuos
@@ -562,16 +583,18 @@ BEGIN
 
   -- ── Seguro ────────────────────────────────────────────────
   INSERT INTO public.seguros
-    (user_id, tipo, tarjeta_id, numero_poliza, prima_mensual, suma_asegurada, moneda, fecha_inicio, fecha_venc)
+    (user_id, tipo, tarjeta_id, numero_poliza, prima_mensual, suma_asegurada,
+     moneda, fecha_inicio, fecha_venc)
   VALUES
-    (uid, 'tarjeta_segura', tc_id, 'POL-TS-0099821', 12.90, 5000.00, 'PEN', CURRENT_DATE, CURRENT_DATE + interval '1 year')
+    (uid, 'tarjeta_segura', tc_id, 'POL-TS-0099821', 12.90, 5000.00,
+     'PEN', CURRENT_DATE, CURRENT_DATE + interval '1 year')
   RETURNING id INTO seg_id;
 
   -- ── Notificaciones ────────────────────────────────────────
   INSERT INTO public.notificaciones (user_id, tipo, titulo, mensaje)
   VALUES
-    (uid, 'movimiento',    'Depósito recibido',       'Se acreditó S/ 3,500.00 en tu Cuenta Digital.'),
-    (uid, 'cuota_proxima', 'Cuota de préstamo próxima','Tu cuota de S/ 547.30 vence en 5 días.'),
+    (uid, 'movimiento',    'Depósito recibido',        'Se acreditó S/ 3,500.00 en tu Cuenta Digital.'),
+    (uid, 'cuota_proxima', 'Cuota de préstamo próxima', 'Tu cuota de S/ 547.30 vence en 5 días.'),
     (uid, 'oferta',        '¡Fondos Mutuos desde $100!','Empieza a invertir en el exterior desde solo $100.');
 
 END $$;

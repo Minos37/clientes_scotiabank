@@ -5,6 +5,8 @@ import '../ui/screens/login_screen.dart';
 import '../ui/screens/register_screen.dart';
 import '../ui/screens/movimientos_screen.dart';
 import '../ui/screens/tarjetas_screen.dart';
+import '../ui/screens/tarjeta_detalle_screen.dart';
+import '../data/model/tarjeta_model.dart';
 import '../ui/viewmodel/auth_viewmodel.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -33,6 +35,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/tarjetas',
         builder: (context, state) => const TarjetasScreen(),
+      ),
+      // Otras rutas...
+      GoRoute(
+        path: '/tarjeta-detalle',
+        builder: (context, state) {
+          final tarjeta = state.extra as Tarjeta;
+          return TarjetaDetalleScreen(tarjeta: tarjeta);
+        },
       ),
     ],
     // Lógica de redirección basada en si el usuario está logueado o no

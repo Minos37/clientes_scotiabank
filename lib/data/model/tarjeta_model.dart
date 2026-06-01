@@ -1,10 +1,10 @@
 class Tarjeta {
   final String id;
-  final String userId;
   final String? cuentaId;
-  final String tipo;
+  final String tipo; // 'credito' o 'debito'
+  final String? subtipo; // 'clasica', 'oro', 'platinum', etc.
   final String numeroEnmascarado;
-  final String marca;
+  final String marca; // 'Visa', 'Mastercard', 'Amex'
   final DateTime fechaVencimiento;
   final double? lineaCredito;
   final double? saldoDisponible;
@@ -13,9 +13,9 @@ class Tarjeta {
 
   Tarjeta({
     required this.id,
-    required this.userId,
     this.cuentaId,
     required this.tipo,
+    this.subtipo,
     required this.numeroEnmascarado,
     required this.marca,
     required this.fechaVencimiento,
@@ -27,19 +27,39 @@ class Tarjeta {
 
   factory Tarjeta.fromJson(Map<String, dynamic> json) {
     return Tarjeta(
-      id: json['id']?.toString() ?? '',
-      userId: json['user_id']?.toString() ?? '',
-      cuentaId: json['cuenta_id']?.toString(),
-      tipo: json['tipo']?.toString() ?? 'debito',
-      numeroEnmascarado: json['numero_enmascarado']?.toString() ?? '',
-      marca: json['marca']?.toString() ?? '',
-      fechaVencimiento: json['fecha_vencimiento'] != null 
-          ? DateTime.parse(json['fecha_vencimiento']) 
-          : DateTime.now(),
-      lineaCredito: (json['linea_credito'] as num?)?.toDouble(),
-      saldoDisponible: (json['saldo_disponible'] as num?)?.toDouble(),
-      activa: json['activa'] == true,
-      puntosAcumulados: (json['puntos_acumulados'] as num?)?.toInt() ?? 0,
+      id: json['id'] as String,
+      cuentaId: json['cuenta_id'] as String?,
+      tipo: json['tipo'] as String,
+      subtipo: json['subtipo'] as String?,
+      numeroEnmascarado: json['numero_enmascarado'] as String,
+      marca: json['marca'] as String,
+      fechaVencimiento: DateTime.parse(json['fecha_vencimiento'] as String),
+      lineaCredito: json['linea_credito'] != null
+          ? double.parse(json['linea_credito'].toString())
+          : null,
+      saldoDisponible: json['saldo_disponible'] != null
+          ? double.parse(json['saldo_disponible'].toString())
+          : null,
+      activa: json['activa'] as bool? ?? true,
+      puntosAcumulados: json['puntos_acumulados'] as int? ?? 0,
     );
+  }
+
+  // Getter de ayuda para mostrar texto formateado
+  String get tipoFormateado {
+    if (tipo == 'credito') {
+      if (subtipo != null) {
+        final nombres = {
+          'visa_sin_membresia': 'Visa Sin Membresía',
+          'visa_smart': 'Visa Smart',
+          'clasica': 'Tarjeta Clásica',
+          'oro': 'Tarjeta Oro',
+          'platinum': 'Tarjeta Platinum',
+        };
+        return nombres[subtipo] ?? 'Tarjeta de Crédito';
+      }
+      return 'Tarjeta de Crédito';
+    }
+    return 'Tarjeta de Débito';
   }
 }

@@ -45,11 +45,15 @@ class TarjetasScreen extends ConsumerWidget {
                   ? 'Visa' // Podríamos usar assets si tuvieramos, pero usaremos texto por ahora
                   : tarjeta.marca;
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isCredito 
+              return GestureDetector(
+                onTap: () {
+                  context.push('/tarjeta-detalle', extra: tarjeta);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isCredito 
                         ? [const Color(0xFF1E1E1E), const Color(0xFF3A3A3A)] // Negro para crédito
                         : [const Color(0xFFED0006), const Color(0xFFB70005)], // Rojo para débito
                     begin: Alignment.topLeft,
@@ -73,7 +77,7 @@ class TarjetasScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            isCredito ? 'Tarjeta de Crédito' : 'Tarjeta de Débito',
+                            tarjeta.tipoFormateado,
                             style: const TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                           Text(
@@ -133,7 +137,8 @@ class TarjetasScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-              );
+              ),
+            );
             },
           );
         },
