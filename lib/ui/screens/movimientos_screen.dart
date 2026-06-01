@@ -95,7 +95,11 @@ class MovimientosScreen extends ConsumerWidget {
           if (index == 0) {
             context.pop(); // Regresar al inicio
           } else if (index == 1) {
-            context.push('/tarjetas');
+            context.go('/tarjetas');
+          } else if (index == 2) {
+            context.go('/operaciones');
+          } else if (index == 3) {
+            context.go('/mas');
           }
         },
         items: const [

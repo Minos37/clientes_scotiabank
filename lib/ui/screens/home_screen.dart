@@ -88,7 +88,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 1) {
-            context.push('/tarjetas');
+            context.go('/tarjetas');
+          } else if (index == 2) {
+            context.go('/operaciones');
+          } else if (index == 3) {
+            context.go('/mas');
           }
         },
         items: const [
@@ -131,6 +135,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final ultimosDigitos = cuentaPrincipal.length > 4 
                   ? cuentaPrincipal.substring(cuentaPrincipal.length - 4) 
                   : cuentaPrincipal;
+                  
+              final textoCuenta = cuentas.length > 1 
+                  ? '${cuentas.length} cuentas vinculadas' 
+                  : 'Cuenta •••• $ultimosDigitos';
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +155,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Row(
                     children: [
                       Text(
-                        'Cuenta •••• $ultimosDigitos',
+                        textoCuenta,
                         style: const TextStyle(color: Colors.white, fontSize: 14),
                       ),
                       const Spacer(),
@@ -190,10 +198,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildQuickAccessAction(Icons.send, 'Transferir'),
-              _buildQuickAccessAction(Icons.receipt_long, 'Pagar\nServicios'),
+              _buildQuickAccessAction(Icons.send, 'Transferir', onTap: () {
+                context.push('/transferencias');
+              }),
+              _buildQuickAccessAction(Icons.receipt_long, 'Pagar\nServicios', onTap: () {
+                context.push('/pagos');
+              }),
               _buildQuickAccessAction(Icons.phone_android, 'Recargas'),
-              _buildQuickAccessAction(Icons.currency_exchange, 'Cambiar\nDólares'),
+              _buildQuickAccessAction(Icons.currency_exchange, 'Cambiar\nDólares', onTap: () {
+                context.push('/divisas');
+              }),
             ],
           ),
         ],
@@ -201,34 +215,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildQuickAccessAction(IconData icon, String label) {
+  Widget _buildQuickAccessAction(IconData icon, String label, {VoidCallback? onTap}) {
     return Expanded(
-      child: Column(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: const Color(0xFFED0006), size: 28),
             ),
-            child: Icon(icon, color: const Color(0xFFED0006), size: 28),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, color: Colors.black87),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
+            ),
+          ],
+        ),
       ),
     );
   }

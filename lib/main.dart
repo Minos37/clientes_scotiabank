@@ -49,7 +49,7 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light, // Forzamos el tema claro para mantener la legibilidad de los textos
       routerConfig: goRouter, // Usamos GoRouter para la navegación
     );
   }

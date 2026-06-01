@@ -154,9 +154,9 @@ class TarjetasScreen extends ConsumerWidget {
           if (index == 0) {
             context.go('/home');
           } else if (index == 2) {
-            // Operaciones
+            context.go('/operaciones');
           } else if (index == 3) {
-            // Más
+            context.go('/mas');
           }
         },
         items: const [

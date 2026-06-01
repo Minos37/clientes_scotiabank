@@ -6,7 +6,16 @@ import '../ui/screens/register_screen.dart';
 import '../ui/screens/movimientos_screen.dart';
 import '../ui/screens/tarjetas_screen.dart';
 import '../ui/screens/tarjeta_detalle_screen.dart';
+import '../ui/screens/operaciones_screen.dart';
+import '../ui/screens/mas_screen.dart';
+import '../ui/screens/perfil_screen.dart';
+import '../ui/screens/pagos_screen.dart';
+import '../ui/screens/transferencias_screen.dart';
+import '../ui/screens/cambio_divisas_screen.dart';
+import '../ui/screens/prestamos_screen.dart';
+import '../ui/screens/prestamo_detalle_screen.dart';
 import '../data/model/tarjeta_model.dart';
+import '../data/model/prestamo_model.dart';
 import '../ui/viewmodel/auth_viewmodel.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -35,6 +44,41 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/tarjetas',
         builder: (context, state) => const TarjetasScreen(),
+      ),
+      GoRoute(
+        path: '/operaciones',
+        builder: (context, state) => const OperacionesScreen(),
+      ),
+      GoRoute(
+        path: '/mas',
+        builder: (context, state) => const MasScreen(),
+      ),
+      GoRoute(
+        path: '/perfil',
+        builder: (context, state) => const PerfilScreen(),
+      ),
+      GoRoute(
+        path: '/pagos',
+        builder: (context, state) => const PagosScreen(),
+      ),
+      GoRoute(
+        path: '/transferencias',
+        builder: (context, state) => const TransferenciasScreen(),
+      ),
+      GoRoute(
+        path: '/divisas',
+        builder: (context, state) => const CambioDivisasScreen(),
+      ),
+      GoRoute(
+        path: '/prestamos',
+        builder: (context, state) => const PrestamosScreen(),
+      ),
+      GoRoute(
+        path: '/prestamo-detalle',
+        builder: (context, state) {
+          final prestamo = state.extra as Prestamo;
+          return PrestamoDetalleScreen(prestamo: prestamo);
+        },
       ),
       // Otras rutas...
       GoRoute(

@@ -4,12 +4,13 @@
 -- Productos y Servicios: Cuentas, Tarjetas, Préstamos,
 --   Inversiones, Seguros y Servicios Digitales
 -- ============================================================
--- CORRECCIONES v1.1:
+-- CORRECCIONES v1.2:
 --   [C1] public.cuentas → tipos reducidos a: digital, sueldo, power
 --   [C2] public.tarjetas → nueva columna `subtipo` para tarjetas de crédito
 --          (visa_sin_membresia | visa_smart | clasica | oro | platinum)
 --          NULL para tarjetas de débito
 --   [C3] public.solicitudes → eliminados cuenta_meta, cuenta_dolares, cts, afp
+--   [C4] public.cuentas → nueva columna `cci` (Código de Cuenta Interbancario, 20 dígitos)
 -- ============================================================
 -- INSTRUCCIONES:
 -- 1. Ir a tu proyecto en supabase.com
@@ -33,12 +34,14 @@ CREATE TABLE IF NOT EXISTS public.cuentas (
                     'power'         -- Cuenta Power
                   )),
   numero_cuenta   TEXT NOT NULL UNIQUE,
+  cci             TEXT UNIQUE,                        -- Código de Cuenta Interbancario (20 dígitos)
   saldo           NUMERIC(14,2) NOT NULL DEFAULT 0,
   moneda          TEXT NOT NULL DEFAULT 'PEN' CHECK (moneda IN ('PEN','USD')),
   costo_mant      NUMERIC(8,2) NOT NULL DEFAULT 0,   -- 0 para Cuenta Digital
   fecha_apertura  DATE DEFAULT CURRENT_DATE,
   activa          BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at      TIMESTAMPTZ DEFAULT now()
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  CONSTRAINT chk_cci_formato CHECK (cci IS NULL OR (cci ~ '^\d{20}$'))
 );
 
 -- ── 1b. Cuentas de ahorro e inversión a corto plazo ───────
@@ -475,6 +478,7 @@ CREATE POLICY "Usuario ve sus notificaciones"
 -- ============================================================
 
 CREATE INDEX IF NOT EXISTS idx_cuentas_user          ON public.cuentas(user_id);
+CREATE INDEX IF NOT EXISTS idx_cuentas_cci            ON public.cuentas(cci) WHERE cci IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_transacciones_user     ON public.transacciones(user_id);
 CREATE INDEX IF NOT EXISTS idx_transacciones_cuenta   ON public.transacciones(cuenta_id);
 CREATE INDEX IF NOT EXISTS idx_transacciones_fecha    ON public.transacciones(fecha DESC);
@@ -504,8 +508,8 @@ DECLARE
 BEGIN
 
   -- ── Cuenta Digital ───────────────────────────────────────
-  INSERT INTO public.cuentas (user_id, tipo, numero_cuenta, saldo, moneda, costo_mant)
-  VALUES (uid, 'digital', '019-1100001', 4250.00, 'PEN', 0)
+  INSERT INTO public.cuentas (user_id, tipo, numero_cuenta, cci, saldo, moneda, costo_mant)
+  VALUES (uid, 'digital', '019-1100001', '00930019011000010001', 4250.00, 'PEN', 0)
   RETURNING id INTO cc_id;
 
   -- ── Transacciones ─────────────────────────────────────────
