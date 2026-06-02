@@ -73,6 +73,11 @@ class MasScreen extends ConsumerWidget {
           
           _buildMenuSection('Productos y Créditos', [
             _buildMenuItem(context, Icons.account_balance_wallet_outlined, 'Mis Préstamos', () => context.push('/prestamos')),
+            _buildMenuItem(context, Icons.savings_outlined, 'Ahorro Programado y Metas', () => context.push('/ahorro')),
+            _buildMenuItem(context, Icons.shield_outlined, 'Mis Seguros', () => context.push('/seguros')),
+            _buildMenuItem(context, Icons.analytics_outlined, 'Mis Inversiones', () => context.push('/inversiones')),
+            _buildMenuItem(context, Icons.stars_outlined, 'Mis Scotia Puntos', () => context.push('/puntos')),
+            _buildMenuItem(context, Icons.receipt_long_outlined, 'Meses Sin Intereses (MSI)', () => context.push('/msi')),
           ]),
           
           const SizedBox(height: 24),

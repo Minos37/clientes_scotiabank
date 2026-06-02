@@ -14,6 +14,12 @@ import '../ui/screens/transferencias_screen.dart';
 import '../ui/screens/cambio_divisas_screen.dart';
 import '../ui/screens/prestamos_screen.dart';
 import '../ui/screens/prestamo_detalle_screen.dart';
+import '../ui/screens/notificaciones_screen.dart';
+import '../ui/screens/ahorro_screen.dart';
+import '../ui/screens/seguros_screen.dart';
+import '../ui/screens/inversiones_screen.dart';
+import '../ui/screens/scotia_puntos_screen.dart';
+import '../ui/screens/meses_sin_intereses_screen.dart';
 import '../data/model/tarjeta_model.dart';
 import '../data/model/prestamo_model.dart';
 import '../ui/viewmodel/auth_viewmodel.dart';
@@ -56,6 +62,30 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/perfil',
         builder: (context, state) => const PerfilScreen(),
+      ),
+      GoRoute(
+        path: '/notificaciones',
+        builder: (context, state) => const NotificacionesScreen(),
+      ),
+      GoRoute(
+        path: '/ahorro',
+        builder: (context, state) => const AhorroScreen(),
+      ),
+      GoRoute(
+        path: '/seguros',
+        builder: (context, state) => const SegurosScreen(),
+      ),
+      GoRoute(
+        path: '/inversiones',
+        builder: (context, state) => const InversionesScreen(),
+      ),
+      GoRoute(
+        path: '/puntos',
+        builder: (context, state) => const ScotiaPuntosScreen(),
+      ),
+      GoRoute(
+        path: '/msi',
+        builder: (context, state) => const MesesSinInteresesScreen(),
       ),
       GoRoute(
         path: '/pagos',

@@ -176,12 +176,21 @@ class TarjetaDetalleScreen extends ConsumerWidget {
               context.push('/movimientos');
             }),
             const SizedBox(height: 12),
-            if (isCredito)
+            if (isCredito) ...[
+              _buildActionItem(context, Icons.stars, 'Ver mis Scotia Puntos', () {
+                context.push('/puntos');
+              }),
+              const SizedBox(height: 12),
+              _buildActionItem(context, Icons.receipt_long, 'Meses Sin Intereses (MSI)', () {
+                context.push('/msi');
+              }),
+              const SizedBox(height: 12),
               _buildActionItem(context, Icons.payment, 'Pagar Tarjeta', () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Funcionalidad "Pagar Tarjeta" próximamente')),
                 );
               }),
+            ],
 
             const SizedBox(height: 32),
             const Text(

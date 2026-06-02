@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../viewmodel/auth_viewmodel.dart';
 import '../viewmodel/cuenta_viewmodel.dart';
 import '../viewmodel/transaccion_viewmodel.dart';
+import '../viewmodel/notificacion_viewmodel.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -54,10 +55,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white),
-            onPressed: () {
-              // TODO: Navegar a notificaciones
+          Consumer(
+            builder: (context, ref, child) {
+              final count = ref.watch(notificacionesNoLeidasCountProvider);
+              return Badge(
+                isLabelVisible: count > 0,
+                label: Text(count.toString()),
+                backgroundColor: Colors.white,
+                textColor: const Color(0xFFED0006),
+                alignment: const Alignment(0.6, -0.6),
+                child: IconButton(
+                  icon: const Icon(Icons.notifications_none, color: Colors.white),
+                  onPressed: () {
+                    context.push('/notificaciones');
+                  },
+                ),
+              );
             },
           ),
           IconButton(
@@ -204,7 +217,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _buildQuickAccessAction(Icons.receipt_long, 'Pagar\nServicios', onTap: () {
                 context.push('/pagos');
               }),
-              _buildQuickAccessAction(Icons.phone_android, 'Recargas'),
+              _buildQuickAccessAction(Icons.savings, 'Mis Metas', onTap: () {
+                context.push('/ahorro');
+              }),
               _buildQuickAccessAction(Icons.currency_exchange, 'Cambiar\nDólares', onTap: () {
                 context.push('/divisas');
               }),

@@ -144,7 +144,7 @@ class _FormularioTransferenciaScreenState extends ConsumerState<FormularioTransf
                       items: cuentasDestinoDisponibles.map((c) {
                         final String num = (c as dynamic).numeroCuenta;
                         final String u = num.length > 4 ? num.substring(num.length - 4) : num;
-                        return DropdownMenuItem(value: (c as dynamic).id, child: Text('Cuenta •••• $u'));
+                        return DropdownMenuItem<String>(value: (c as dynamic).id as String, child: Text('Cuenta •••• $u'));
                       }).toList(),
                       onChanged: (val) => setState(() => _cuentaDestinoId = val),
                       validator: (v) => v == null ? 'Selecciona la cuenta destino' : null,
