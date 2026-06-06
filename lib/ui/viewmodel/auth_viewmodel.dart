@@ -70,6 +70,18 @@ class AuthViewModel extends Notifier<AuthState> {
     }
   }
 
+  Future<bool> recoverPassword(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await ref.read(authRepositoryProvider).recoverPassword(email);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {

@@ -9,6 +9,9 @@ abstract class AuthRepository {
   /// Registra un nuevo usuario.
   Future<UserModel?> register(String email, String password, {String? nombre, String? dni});
 
+  /// Envía un correo de recuperación de contraseña.
+  Future<void> recoverPassword(String email);
+
   /// Cierra la sesión actual.
   Future<void> logout();
 

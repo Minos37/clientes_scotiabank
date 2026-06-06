@@ -20,6 +20,7 @@ import '../ui/screens/seguros_screen.dart';
 import '../ui/screens/inversiones_screen.dart';
 import '../ui/screens/scotia_puntos_screen.dart';
 import '../ui/screens/meses_sin_intereses_screen.dart';
+import '../ui/screens/solicitudes_screen.dart';
 import '../data/model/tarjeta_model.dart';
 import '../data/model/prestamo_model.dart';
 import '../ui/viewmodel/auth_viewmodel.dart';
@@ -86,6 +87,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/msi',
         builder: (context, state) => const MesesSinInteresesScreen(),
+      ),
+      GoRoute(
+        path: '/solicitudes',
+        builder: (context, state) => const SolicitudesScreen(),
       ),
       GoRoute(
         path: '/pagos',

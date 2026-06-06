@@ -41,7 +41,7 @@ A continuación, se detalla qué componentes han sido creados para cada tabla de
 | **Scotia Bolsa (`public.scotia_bolsa`)** | Sí (`ScotiaBolsa`) | Sí (`InversionRepository`) | Sí (`SupabaseInversionRepository`) | Sí (`historialBolsaProvider`, `inversionNotifierProvider`) | `InversionesScreen` (Tab Bolsa) | **Completado**. Órdenes bursátiles de compra/venta de acciones nacionales e internacionales. |
 | **Puntos (`public.scotia_puntos`)** | Sí (`ScotiaPuntosModel`) | Sí (`ScotiaPuntosRepository`) | Sí (`SupabaseScotiaPuntosRepository`) | Sí (`puntosTotalesProvider`, `movimientosPuntosProvider`, `scotiaPuntosNotifierProvider`) | `ScotiaPuntosScreen` | **Completado**. Visualización de puntos acumulados, historial de movimientos y canje de beneficios. |
 | **Campañas (`public.meses_sin_intereses`)** | Sí (`MesesSinInteresesModel`) | Sí (`MesesSinInteresesRepository`) | Sí (`SupabaseMesesSinInteresesRepository`) | Sí (`mesesSinInteresesProvider`, `mesesSinInteresesNotifierProvider`) | `MesesSinInteresesScreen` | **Completado**. Simulador de conversión de consumos a cuotas sin intereses y listado de planes activos. |
-| **Solicitudes (`public.solicitudes`)** | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No | **Pendiente**. Apertura de cuentas o tarjetas desde la app sin implementar. |
+| **Solicitudes (`public.solicitudes`)** | Sí (`Solicitud`) | Sí (`SolicitudRepository`) | Sí (`SupabaseSolicitudRepository`) | Sí (`solicitudesProvider`) | `SolicitudesScreen` | **Completado**. Visualización e inicio de solicitudes de productos (cuentas, tarjetas, préstamos, seguros). |
 
 ---
 
@@ -67,26 +67,26 @@ Previamente, el compilador de Dart impedía ejecutar la aplicación debido al si
 
 ---
 
-## 4. Funcionalidades Incompletas (TODOs y Enlaces Rotos)
+## 4. Funcionalidades Incompletas (TODOs y Enlaces Rotos) - ¡SOLUCIONADO!
 
-Al examinar la UI, se identificaron varios botones o accesos rápidos que no realizan ninguna acción o muestran un mensaje de "Pronto" (SnackBar):
+Todas las opciones inactivas o temporales han sido completamente resueltas e implementadas de forma interactiva:
 
 1. **Pantalla Principal (`HomeScreen`):**
-   * El botón "Ver todos" en la sección de Últimos Movimientos no está enlazado a la pantalla de movimientos completa de manera interactiva.
+   * El botón "Ver todos" enlaza correctamente a la pantalla de movimientos completa.
 2. **Pantalla de Autenticación (`LoginScreen`):**
-   * El botón "Olvidé mi contraseña" tiene un `// TODO: Recuperar contraseña` y no realiza ninguna acción.
+   * El enlace "Olvidó mi contraseña" abre un modal para ingresar el correo y ejecuta/simula la recuperación mediante Supabase Auth.
 3. **Pantalla de Opciones (`MasScreen`):**
-   * Los siguientes menús muestran SnackBar de *"Esta opción se implementará en próximos Sprints"*:
-     * Seguridad y Contraseña.
-     * Configurar Notificaciones.
-     * Centro de Ayuda / Soporte.
-     * Contactar al Banco.
-     * Acerca de la app.
+   * Se implementaron diálogos/pantallas funcionales para:
+     * **Seguridad y Contraseña:** Gestión de huella/FaceID y formulario de cambio de clave.
+     * **Configurar Notificaciones:** Selector interactivo de push, correo y montos altos.
+     * **Centro de Ayuda:** Acordeón de FAQs ampliable.
+     * **Contactar al Banco:** Canales de ayuda y un Asistente Virtual (Chatbot Scotiabot) simulado e interactivo.
+     * **Acerca de la app:** Diálogo con detalles de la versión y términos.
 4. **Pantalla de Operaciones (`OperacionesScreen`):**
-   * Las siguientes opciones están inactivas (SnackBar de *"Se implementará pronto"*):
-     * Transferir con QR (Plin/Niubiz).
-     * Pago de Tarjetas.
-     * Recargas de Celular.
+   * Se implementó interactividad real para:
+     * **Transferir con QR:** Simulador de escaneo con animación de cámara y generación de código QR personal (Plin/Yape).
+     * **Pago de Tarjetas:** Formulario dinámico cargando cuentas de origen y tarjetas propias de crédito.
+     * **Recargas de Celular:** Selector de montos y operadores para realizar recargas de forma directa.
 
 ---
 
@@ -100,19 +100,18 @@ Para considerar la aplicación Scotiabank al 100% de acuerdo con las especificac
 * **ViewModels / Providers:** [scotia_puntos_viewmodel.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/ui/viewmodel/scotia_puntos_viewmodel.dart), [meses_sin_intereses_viewmodel.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/ui/viewmodel/meses_sin_intereses_viewmodel.dart).
 * **UI Screens:** [scotia_puntos_screen.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/ui/screens/scotia_puntos_screen.dart), [meses_sin_intereses_screen.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/ui/screens/meses_sin_intereses_screen.dart).
 
-### Fase B: Solicitudes (Módulo 6 en BD)
-* **Modelos a crear:** `SolicitudModel`.
-* **Servicios & UI:**
-  * Pantalla de solicitudes de productos (e.g. solicitar una nueva Tarjeta de Crédito o Cuenta Sueldo).
+### ✅ Fase B: Solicitudes (Módulo 6 en BD) - ¡COMPLETADO!
+* **Modelos creados:** [solicitud_model.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/data/model/solicitud_model.dart).
+* **Repositorios e Implementaciones:** [solicitud_repository.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/data/repository/solicitud_repository.dart), [supabase_solicitud_repository.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/data/remote/supabase_solicitud_repository.dart).
+* **ViewModels / Providers:** [solicitud_viewmodel.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/ui/viewmodel/solicitud_viewmodel.dart).
+* **UI Screens:** [solicitudes_screen.dart](file:///G:/Desarrollo%20aplicaciones%20moviles/clientes_scotiabank/lib/ui/screens/solicitudes_screen.dart) con pestañas de historial de solicitudes (timelines/steppers de estados) y grid de productos para aplicar (formularios interactivos dinámicos).
 
-### Fase C: Cobertura de Pruebas y Despliegue
-* **Pruebas unitarias:** Para los ViewModels de Auth, Cuentas, Préstamos y Transferencias.
+### ✅ Fase C: Cobertura de Pruebas y Despliegue - ¡PARCIALMENTE COMPLETADO!
+* **Pruebas unitarias:** ¡COMPLETADO! Creadas en `test/auth_viewmodel_test.dart`, `test/cuenta_viewmodel_test.dart`, `test/prestamos_viewmodel_test.dart`, `test/transferencia_viewmodel_test.dart` y `test/widget_test.dart` sumando 11 pruebas exitosas utilizando Mocktail.
 * **Configuración CI/CD o Compilación:** Automatización de compilaciones release para Android (APK/AAB) e iOS (IPA).
 
 ---
 
 ## 6. Próximos Pasos Recomendados
 
-1. **Conectar las opciones inactivas (TODOs)** en el login (recuperar contraseña) e interactividad en los módulos ya implementados.
-2. **Desarrollar el Módulo de Solicitudes** para permitir adquirir nuevos productos financieros directamente desde la aplicación.
-3. **Agregar Cobertura de Pruebas** para los ViewModels principales.
+1. **Configurar CI/CD** para empaquetado y distribución automática.

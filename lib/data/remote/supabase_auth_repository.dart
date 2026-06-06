@@ -41,6 +41,15 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> recoverPassword(String email) async {
+    try {
+      await _client.auth.resetPasswordForEmail(email);
+    } catch (e) {
+      throw Exception('Error al enviar correo de recuperación: $e');
+    }
+  }
+
+  @override
   Future<void> logout() async {
     await _client.auth.signOut();
   }

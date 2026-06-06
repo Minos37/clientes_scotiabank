@@ -13,7 +13,7 @@ class AhorroScreen extends ConsumerStatefulWidget {
 
 class _AhorroScreenState extends ConsumerState<AhorroScreen> {
   final currencyFormatterPEN = NumberFormat.currency(locale: 'es_PE', symbol: 'S/ ');
-  final currencyFormatterUSD = NumberFormat.currency(locale: 'en_US', symbol: '$ ');
+  final currencyFormatterUSD = NumberFormat.currency(locale: 'en_US', symbol: '\$ ');
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +143,7 @@ class _AhorroScreenState extends ConsumerState<AhorroScreen> {
             const SizedBox(height: 8),
             Text(
               'Crea una meta para organizar tu dinero a una tasa preferencial de 3.5% TREA.',
-              textAlign: Center,
+              textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ],
@@ -310,7 +310,7 @@ class _AhorroScreenState extends ConsumerState<AhorroScreen> {
                       ),
                       const SizedBox(width: 12),
                       ChoiceChip(
-                        label: const Text('Dólares ($)'),
+                        label: const Text('Dólares (\$)'),
                         selected: moneda == 'USD',
                         selectedColor: const Color(0xFFED0006).withOpacity(0.15),
                         onSelected: (val) {
